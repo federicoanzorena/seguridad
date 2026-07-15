@@ -25,5 +25,13 @@ class ConfiguracionSeguridad(BaseSettings):
     # Base de datos
     database_url: str = "sqlite:///seguridad.db"
 
+    # Email SMTP
+    smtp_host: str = "localhost"
+    smtp_port: int = 587
+    smtp_usuario: str = ""
+    smtp_password: str = ""
+    smtp_usar_tls: bool = True
+    email_remitente: str = "no-responder@seguridad.dev"
+
 
 configuracion = ConfiguracionSeguridad()
