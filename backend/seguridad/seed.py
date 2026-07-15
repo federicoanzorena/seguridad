@@ -19,6 +19,7 @@ PERMISOS_POR_DEFECTO = [
     ("usuarios:crear", "Crear usuarios"),
     ("usuarios:editar", "Editar usuarios"),
     ("usuarios:eliminar", "Eliminar usuarios"),
+    ("roles:gestionar", "Crear roles/permisos y asignarlos a usuarios"),
 ]
 
 ROLES_POR_DEFECTO = {
@@ -29,6 +30,7 @@ ROLES_POR_DEFECTO = {
             "usuarios:crear",
             "usuarios:editar",
             "usuarios:eliminar",
+            "roles:gestionar",
         ],
     },
     "editor": {
