@@ -109,13 +109,9 @@ def perfil(usuario: Usuario = Depends(obtener_usuario_actual)):
     }
 
 
-class CerrarSesionSolicitud(BaseModel):
-    refresh_token: str
-
-
-@router.post("/cerrar-sesion")
-def cerrar_sesion(
-    solicitud: CerrarSesionSolicitud,
+@router.post("/logout")
+def logout(
+    solicitud: RefreshSolicitud,
     db: Session = Depends(obtener_db),
 ):
     return ServicioAutenticacion.cerrar_sesion(db, solicitud.refresh_token)
