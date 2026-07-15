@@ -22,5 +22,8 @@ class ConfiguracionSeguridad(BaseSettings):
     # Reglas de contraseña
     longitud_minima_password: int = 8
 
+    # Base de datos
+    database_url: str = "sqlite:///seguridad.db"
+
 
 configuracion = ConfiguracionSeguridad()
