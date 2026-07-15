@@ -7,8 +7,8 @@ import hashlib
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
+import bcrypt
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 
 from .config import configuracion
 
@@ -16,17 +16,15 @@ from .config import configuracion
 # Hashing de contraseñas
 # ---------------------------------------------------------------------------
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 
 def hashear_password(password: str) -> str:
     """Convierte la contraseña a hash con bcrypt. Nunca se puede revertir."""
-    return pwd_context.hash(password)
+    return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
 
 def verificar_password(password: str, password_hash: str) -> bool:
     """Compara una contraseña intento contra el hash guardado."""
-    return pwd_context.verify(password, password_hash)
+    return bcrypt.checkpw(password.encode(), password_hash.encode())
 
 
 # ---------------------------------------------------------------------------
