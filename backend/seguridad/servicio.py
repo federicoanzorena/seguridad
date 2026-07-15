@@ -87,7 +87,7 @@ class ServicioAutenticacion:
         return RegistroRespuesta(
             usuario_id=str(usuario.id),
             email=usuario.email,
-            message="Usuario registrado. Se envió un email de verificación.",
+            mensaje="Usuario registrado. Se envió un email de verificación.",
         )
 
     @staticmethod
