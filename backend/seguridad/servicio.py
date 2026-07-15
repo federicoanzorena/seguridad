@@ -218,7 +218,7 @@ class ServicioAutenticacion:
         token_verif.usado = True
         db.add(token_verif)
 
-        usuario = db.get(Usuario, UUID(usuario_id))
+        usuario = db.get(Usuario, usuario_id)
         usuario.email_verificado = True
         db.add(usuario)
         db.commit()
@@ -245,7 +245,6 @@ class ServicioAutenticacion:
 
         return {
             "message": "Si el email existe, se envió un enlace de recuperación",
-            "token_debug": token_plano,
         }
 
     @staticmethod
@@ -294,7 +293,7 @@ class ServicioAutenticacion:
         token_rec.usado = True
         db.add(token_rec)
 
-        usuario = db.get(Usuario, UUID(usuario_id))
+        usuario = db.get(Usuario, usuario_id)
         usuario.password_hash = hashear_password(nueva_password)
         db.add(usuario)
         db.commit()
