@@ -32,6 +32,7 @@ class ConfiguracionSeguridad(BaseSettings):
     smtp_password: str = ""
     smtp_usar_tls: bool = True
     email_remitente: str = "no-responder@seguridad.dev"
+    frontend_url: str = "http://localhost:5173"
 
 
 configuracion = ConfiguracionSeguridad()

@@ -11,6 +11,7 @@ from pydantic import BaseModel
 from sqlmodel import Session, select
 
 from .config import configuracion
+from .email.base import EnviadorEmail
 from .modelos import TokenRefresco, TokenVerificacion, Usuario
 from .seguridad import (
     crear_access_token,
@@ -48,7 +49,7 @@ class ServicioAutenticacion:
 
     @staticmethod
     def registrar_usuario(
-        db: Session, email: str, password: str, nombre: str | None = None
+        db: Session, email: str, password: str, enviador: EnviadorEmail, nombre: str | None = None
     ) -> RegistroRespuesta:
         """Registra un usuario nuevo. Lanza 400 si el email ya existe o la contraseña es muy corta."""
         if len(password) < configuracion.longitud_minima_password:
@@ -83,6 +84,13 @@ class ServicioAutenticacion:
         )
         db.add(token_verif)
         db.commit()
+
+        link = f"{configuracion.frontend_url}/verificar-email?token={token_plano}"
+        enviador.enviar(
+            destinatario=usuario.email,
+            asunto="Verificá tu email",
+            cuerpo_html=f"<p>Hacé click para verificar tu cuenta: <a href='{link}'>{link}</a></p>",
+        )
 
         return RegistroRespuesta(
             usuario_id=str(usuario.id),
@@ -226,7 +234,7 @@ class ServicioAutenticacion:
         return {"message": "Email verificado correctamente"}
 
     @staticmethod
-    def solicitar_recuperacion(db: Session, email: str) -> dict:
+    def solicitar_recuperacion(db: Session, email: str, enviador: EnviadorEmail) -> dict:
         """Envía un token de recuperación si el email existe. Siempre retorna mensaje genérico."""
         usuario = db.exec(select(Usuario).where(Usuario.email == email)).first()
         if not usuario:
@@ -243,9 +251,14 @@ class ServicioAutenticacion:
         db.add(token_rec)
         db.commit()
 
-        return {
-            "message": "Si el email existe, se envió un enlace de recuperación",
-        }
+        link = f"{configuracion.frontend_url}/restablecer-password?token={token_plano}"
+        enviador.enviar(
+            destinatario=usuario.email,
+            asunto="Recuperar contraseña",
+            cuerpo_html=f"<p>Hacé click para restablecer tu contraseña: <a href='{link}'>{link}</a></p>",
+        )
+
+        return {"message": "Si el email existe, se envió un enlace de recuperación"}
 
     @staticmethod
     def restablecer_password(db: Session, token: str, nueva_password: str) -> dict:

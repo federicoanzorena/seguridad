@@ -11,6 +11,8 @@ from jose import JWTError
 from sqlmodel import Session, create_engine
 
 from .config import configuracion
+from .email.base import EnviadorEmail
+from .email.smtp import EnviadorEmailConsola, EnviadorEmailSMTP
 from .modelos import Usuario
 from .seguridad import decodificar_token
 
@@ -70,3 +72,10 @@ def requerir_permiso(codigo: str):
             )
         return usuario
     return _verificar
+
+
+def obtener_enviador_email() -> EnviadorEmail:
+    """Usa SMTP si hay credenciales configuradas, sino imprime en consola (desarrollo)."""
+    if configuracion.smtp_usuario and configuracion.smtp_password:
+        return EnviadorEmailSMTP()
+    return EnviadorEmailConsola()

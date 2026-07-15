@@ -7,7 +7,8 @@ from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
 from sqlmodel import Session
 
-from .dependencias import obtener_db, obtener_usuario_actual
+from .dependencias import obtener_db, obtener_usuario_actual, obtener_enviador_email
+from .email.base import EnviadorEmail
 from .modelos import Usuario
 from .servicio import ServicioAutenticacion
 
@@ -46,9 +47,10 @@ class RestablecerPasswordSolicitud(BaseModel):
 def registro(
     solicitud: RegistroSolicitud,
     db: Session = Depends(obtener_db),
+    enviador: EnviadorEmail = Depends(obtener_enviador_email),
 ):
     return ServicioAutenticacion.registrar_usuario(
-        db, solicitud.email, solicitud.password, solicitud.nombre
+        db, solicitud.email, solicitud.password, enviador, solicitud.nombre
     )
 
 
@@ -80,8 +82,9 @@ def verificar_email(
 def solicitar_recuperacion(
     email: str = Query(..., description="Email del usuario"),
     db: Session = Depends(obtener_db),
+    enviador: EnviadorEmail = Depends(obtener_enviador_email),
 ):
-    return ServicioAutenticacion.solicitar_recuperacion(db, email)
+    return ServicioAutenticacion.solicitar_recuperacion(db, email, enviador)
 
 
 @router.post("/restablecer-password")
