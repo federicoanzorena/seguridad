@@ -299,3 +299,21 @@ class ServicioAutenticacion:
         db.commit()
 
         return {"message": "Contraseña restablecida correctamente"}
+
+    @staticmethod
+    def cerrar_sesion(db: Session, token_refresh: str) -> dict:
+        """Revoca un refresh token específico (logout real)."""
+        token_hash = hashear_token(token_refresh)
+        token_encontrado = db.exec(
+            select(TokenRefresco).where(
+                TokenRefresco.token_hash == token_hash,
+                TokenRefresco.revocado == False,
+            )
+        ).first()
+
+        if token_encontrado:
+            token_encontrado.revocado = True
+            db.add(token_encontrado)
+            db.commit()
+
+        return {"message": "Sesión cerrada correctamente"}
