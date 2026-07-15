@@ -3,6 +3,7 @@ Módulo de seguridad de usuarios — Hashing y JWT
 Funciones para hashing de contraseñas (bcrypt) y creación/verificación de JWT.
 """
 
+import hashlib
 from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
@@ -75,12 +76,10 @@ def decodificar_token(token: str) -> dict:
 # ---------------------------------------------------------------------------
 
 def hashear_token(token: str) -> str:
-    """Hashea un token para guardarlo en BD (refresh tokens y tokens de
-    verificación se almacenan hasheados, nunca en texto plano).
-    """
-    return pwd_context.hash(token)
+    """Hash determinístico (SHA-256) para tokens de alta entropía.
+    No usar bcrypt acá: bcrypt trunca a 72 bytes y un JWT es más largo."""
+    return hashlib.sha256(token.encode()).hexdigest()
 
 
 def verificar_token(token: str, token_hash: str) -> bool:
-    """Verifica un token contra su hash guardado en BD."""
-    return pwd_context.verify(token, token_hash)
+    return hashear_token(token) == token_hash
