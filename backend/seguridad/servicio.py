@@ -140,7 +140,7 @@ class ServicioAutenticacion:
                 detail="El token no es un refresh token",
             )
 
-        usuario_id = payload.get("sub")
+        usuario_id = UUID(payload.get("sub"))
         tokens = db.exec(
             select(TokenRefresco).where(
                 TokenRefresco.usuario_id == usuario_id,
@@ -164,11 +164,11 @@ class ServicioAutenticacion:
         db.add(token_encontrado)
         db.commit()
 
-        access = crear_access_token(UUID(usuario_id))
-        refresh_nuevo = crear_refresh_token(UUID(usuario_id))
+        access = crear_access_token(usuario_id)
+        refresh_nuevo = crear_refresh_token(usuario_id)
 
         nuevo_registro = TokenRefresco(
-            usuario_id=UUID(usuario_id),
+            usuario_id=usuario_id,
             token_hash=hashear_token(refresh_nuevo),
             expira_en=datetime.now(timezone.utc)
             + timedelta(days=configuracion.dias_expiracion_refresh_token),
@@ -195,11 +195,10 @@ class ServicioAutenticacion:
                 detail="Tipo de token inválido",
             )
 
-        usuario_id = payload.get("sub")
+        usuario_id = UUID(payload.get("sub"))
         token_verif = db.exec(
             select(TokenVerificacion).where(
                 TokenVerificacion.usuario_id == usuario_id,
-                TokenVerificacion.tipo == "verificacion_email",
                 TokenVerificacion.usado == False,
             )
         ).first()
@@ -219,7 +218,7 @@ class ServicioAutenticacion:
         token_verif.usado = True
         db.add(token_verif)
 
-        usuario = db.get(Usuario, usuario_id)
+        usuario = db.get(Usuario, UUID(usuario_id))
         usuario.email_verificado = True
         db.add(usuario)
         db.commit()
@@ -272,11 +271,10 @@ class ServicioAutenticacion:
                 detail="Tipo de token inválido",
             )
 
-        usuario_id = payload.get("sub")
+        usuario_id = UUID(payload.get("sub"))
         token_rec = db.exec(
             select(TokenVerificacion).where(
                 TokenVerificacion.usuario_id == usuario_id,
-                TokenVerificacion.tipo == "recuperar_password",
                 TokenVerificacion.usado == False,
             )
         ).first()
@@ -296,7 +294,7 @@ class ServicioAutenticacion:
         token_rec.usado = True
         db.add(token_rec)
 
-        usuario = db.get(Usuario, usuario_id)
+        usuario = db.get(Usuario, UUID(usuario_id))
         usuario.password_hash = hashear_password(nueva_password)
         db.add(usuario)
         db.commit()

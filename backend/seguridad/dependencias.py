@@ -3,6 +3,8 @@ Módulo de seguridad de usuarios — Dependencias de FastAPI
 obtener_db(), obtener_usuario_actual() y requerir_permiso().
 """
 
+from uuid import UUID
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError
@@ -41,7 +43,7 @@ def obtener_usuario_actual(
     except JWTError:
         raise credenciales_exception
 
-    usuario = db.get(Usuario, usuario_id)
+    usuario = db.get(Usuario, UUID(usuario_id))
     if usuario is None:
         raise credenciales_exception
     if not usuario.esta_activo:
