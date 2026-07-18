@@ -7,7 +7,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
-from sqlmodel import Session
+from sqlmodel import Session, select
 
 from .dependencias import obtener_db, obtener_usuario_actual, obtener_enviador_email, requerir_permiso
 from .email.base import EnviadorEmail
@@ -54,6 +54,10 @@ class PermisoCrearSolicitud(BaseModel):
 
 class AsignacionSolicitud(BaseModel):
     rol_id: UUID
+
+
+class PermisoAsignacionSolicitud(BaseModel):
+    permiso_id: UUID
 
 
 # ---------------------------------------------------------------------------
@@ -120,12 +124,18 @@ def restablecer_password(
 
 @router.get("/perfil")
 def perfil(usuario: Usuario = Depends(obtener_usuario_actual)):
+    permisos = set()
+    for rol in usuario.roles:
+        for permiso in rol.permisos:
+            permisos.add(permiso.codigo)
+
     return {
         "id": str(usuario.id),
         "email": usuario.email,
         "nombre_completo": usuario.nombre_completo,
         "email_verificado": usuario.email_verificado,
         "roles": [rol.nombre for rol in usuario.roles],
+        "permisos": sorted(permisos),
     }
 
 
@@ -146,7 +156,16 @@ def listar_roles(
     db: Session = Depends(obtener_db),
     _: Usuario = Depends(requerir_permiso("roles:gestionar")),
 ):
-    return ServicioRoles.listar_roles(db)
+    roles = ServicioRoles.listar_roles(db)
+    return [
+        {
+            "id": str(rol.id),
+            "nombre": rol.nombre,
+            "descripcion": rol.descripcion,
+            "permisos": [str(p.id) for p in rol.permisos],
+        }
+        for rol in roles
+    ]
 
 
 @router.post("/roles")
@@ -155,7 +174,13 @@ def crear_rol(
     db: Session = Depends(obtener_db),
     _: Usuario = Depends(requerir_permiso("roles:gestionar")),
 ):
-    return ServicioRoles.crear_rol(db, solicitud.nombre, solicitud.descripcion)
+    rol = ServicioRoles.crear_rol(db, solicitud.nombre, solicitud.descripcion)
+    return {
+        "id": str(rol.id),
+        "nombre": rol.nombre,
+        "descripcion": rol.descripcion,
+        "permisos": [],
+    }
 
 
 @router.get("/permisos")
@@ -195,3 +220,47 @@ def quitar_rol(
 ):
     ServicioRoles.quitar_rol_de_usuario(db, usuario_id, rol_id)
     return {"message": "Rol removido correctamente"}
+
+
+@router.get("/usuarios")
+def listar_usuarios(
+    db: Session = Depends(obtener_db),
+    _: Usuario = Depends(requerir_permiso("roles:gestionar")),
+):
+    usuarios = db.exec(select(Usuario)).all()
+    return [
+        {
+            "id": str(u.id),
+            "email": u.email,
+            "nombre_completo": u.nombre_completo,
+            "esta_activo": u.esta_activo,
+            "email_verificado": u.email_verificado,
+            "roles": [
+                {"id": str(rol.id), "nombre": rol.nombre}
+                for rol in u.roles
+            ],
+        }
+        for u in usuarios
+    ]
+
+
+@router.post("/roles/{rol_id}/permisos")
+def asignar_permiso_a_rol(
+    rol_id: UUID,
+    solicitud: PermisoAsignacionSolicitud,
+    db: Session = Depends(obtener_db),
+    _: Usuario = Depends(requerir_permiso("roles:gestionar")),
+):
+    ServicioRoles.asignar_permiso_a_rol(db, rol_id, solicitud.permiso_id)
+    return {"message": "Permiso asignado al rol correctamente"}
+
+
+@router.delete("/roles/{rol_id}/permisos/{permiso_id}")
+def quitar_permiso_de_rol(
+    rol_id: UUID,
+    permiso_id: UUID,
+    db: Session = Depends(obtener_db),
+    _: Usuario = Depends(requerir_permiso("roles:gestionar")),
+):
+    ServicioRoles.quitar_permiso_de_rol(db, rol_id, permiso_id)
+    return {"message": "Permiso removido del rol correctamente"}

@@ -5,7 +5,7 @@ Funciones para hashing de contraseñas (bcrypt) y creación/verificación de JWT
 
 import hashlib
 from datetime import datetime, timedelta, timezone
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import bcrypt
 from jose import JWTError, jwt
@@ -36,7 +36,7 @@ def crear_access_token(usuario_id: UUID) -> str:
     expiracion = datetime.now(timezone.utc) + timedelta(
         minutes=configuracion.minutos_expiracion_access_token
     )
-    payload = {"sub": str(usuario_id), "exp": expiracion, "tipo": "access"}
+    payload = {"sub": str(usuario_id), "exp": expiracion, "tipo": "access", "jti": str(uuid4())}
     return jwt.encode(payload, configuracion.secret_key, algorithm=configuracion.algoritmo_jwt)
 
 
@@ -45,7 +45,7 @@ def crear_refresh_token(usuario_id: UUID) -> str:
     expiracion = datetime.now(timezone.utc) + timedelta(
         days=configuracion.dias_expiracion_refresh_token
     )
-    payload = {"sub": str(usuario_id), "exp": expiracion, "tipo": "refresh"}
+    payload = {"sub": str(usuario_id), "exp": expiracion, "tipo": "refresh", "jti": str(uuid4())}
     return jwt.encode(payload, configuracion.secret_key, algorithm=configuracion.algoritmo_jwt)
 
 
@@ -56,7 +56,7 @@ def crear_token_verificacion(usuario_id: UUID, tipo: str) -> str:
     expiracion = datetime.now(timezone.utc) + timedelta(
         hours=configuracion.horas_expiracion_token_verificacion
     )
-    payload = {"sub": str(usuario_id), "exp": expiracion, "tipo": tipo}
+    payload = {"sub": str(usuario_id), "exp": expiracion, "tipo": tipo, "jti": str(uuid4())}
     return jwt.encode(payload, configuracion.secret_key, algorithm=configuracion.algoritmo_jwt)
 
 

@@ -210,4 +210,96 @@ export async function verificarEmail(token: string) {
   return respuesta.json();
 }
 
+// ---------------------------------------------------------------------------
+// Admin — Roles y permisos
+// ---------------------------------------------------------------------------
+
+export interface Rol {
+  id: string;
+  nombre: string;
+  descripcion: string | null;
+  permisos: string[];
+}
+
+export interface Permiso {
+  id: string;
+  codigo: string;
+  descripcion: string | null;
+}
+
+export async function listarRoles(): Promise<Rol[]> {
+  const respuesta = await fetchConAuth("/auth/roles");
+  if (!respuesta.ok) throw new Error("No se pudieron obtener los roles");
+  return respuesta.json();
+}
+
+export async function crearRol(nombre: string, descripcion?: string): Promise<Rol> {
+  const respuesta = await fetchConAuth("/auth/roles", {
+    method: "POST",
+    body: JSON.stringify({ nombre, descripcion }),
+  });
+  if (!respuesta.ok) throw new Error("No se pudo crear el rol");
+  return respuesta.json();
+}
+
+export async function listarPermisos(): Promise<Permiso[]> {
+  const respuesta = await fetchConAuth("/auth/permisos");
+  if (!respuesta.ok) throw new Error("No se pudieron obtener los permisos");
+  return respuesta.json();
+}
+
+export async function crearPermiso(codigo: string, descripcion?: string): Promise<Permiso> {
+  const respuesta = await fetchConAuth("/auth/permisos", {
+    method: "POST",
+    body: JSON.stringify({ codigo, descripcion }),
+  });
+  if (!respuesta.ok) throw new Error("No se pudo crear el permiso");
+  return respuesta.json();
+}
+
+export async function asignarRol(usuarioId: string, rolId: string): Promise<void> {
+  const respuesta = await fetchConAuth(`/auth/usuarios/${usuarioId}/roles`, {
+    method: "POST",
+    body: JSON.stringify({ rol_id: rolId }),
+  });
+  if (!respuesta.ok) throw new Error("No se pudo asignar el rol");
+}
+
+export async function quitarRol(usuarioId: string, rolId: string): Promise<void> {
+  const respuesta = await fetchConAuth(`/auth/usuarios/${usuarioId}/roles/${rolId}`, {
+    method: "DELETE",
+  });
+  if (!respuesta.ok) throw new Error("No se pudo quitar el rol");
+}
+
+export interface UsuarioAdmin {
+  id: string;
+  email: string;
+  nombre_completo: string | null;
+  esta_activo: boolean;
+  email_verificado: boolean;
+  roles: { id: string; nombre: string }[];
+}
+
+export async function listarUsuarios(): Promise<UsuarioAdmin[]> {
+  const respuesta = await fetchConAuth("/auth/usuarios");
+  if (!respuesta.ok) throw new Error("No se pudieron obtener los usuarios");
+  return respuesta.json();
+}
+
+export async function asignarPermisoARol(rolId: string, permisoId: string): Promise<void> {
+  const respuesta = await fetchConAuth(`/auth/roles/${rolId}/permisos`, {
+    method: "POST",
+    body: JSON.stringify({ permiso_id: permisoId }),
+  });
+  if (!respuesta.ok) throw new Error("No se pudo asignar el permiso al rol");
+}
+
+export async function quitarPermisoDeRol(rolId: string, permisoId: string): Promise<void> {
+  const respuesta = await fetchConAuth(`/auth/roles/${rolId}/permisos/${permisoId}`, {
+    method: "DELETE",
+  });
+  if (!respuesta.ok) throw new Error("No se pudo quitar el permiso del rol");
+}
+
 export { fetchConAuth };

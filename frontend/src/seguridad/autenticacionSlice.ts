@@ -12,6 +12,7 @@ export interface UsuarioAutenticado {
   nombre_completo: string | null;
   email_verificado: boolean;
   roles: string[];
+  permisos: string[];
 }
 
 interface EstadoAutenticacion {

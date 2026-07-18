@@ -57,7 +57,7 @@ export function useAuth() {
   }, []);
 
   const tienePermiso = useCallback(
-    (permiso: string) => estado.usuario?.roles.includes(permiso) ?? false,
+    (permiso: string) => estado.usuario?.permisos.includes(permiso) ?? false,
     [estado.usuario]
   );
 

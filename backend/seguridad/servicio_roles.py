@@ -100,3 +100,14 @@ class ServicioRoles:
         if vinculo:
             db.delete(vinculo)
             db.commit()
+
+    @staticmethod
+    def quitar_permiso_de_rol(db: Session, rol_id: UUID, permiso_id: UUID) -> None:
+        vinculo = db.exec(
+            select(RolPermiso).where(
+                RolPermiso.rol_id == rol_id, RolPermiso.permiso_id == permiso_id
+            )
+        ).first()
+        if vinculo:
+            db.delete(vinculo)
+            db.commit()

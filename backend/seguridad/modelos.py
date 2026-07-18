@@ -100,7 +100,10 @@ class TokenRefresco(SQLModel, table=True):
 
     @property
     def esta_vencido(self) -> bool:
-        return ahora_utc() > self.expira_en
+        expira = self.expira_en
+        if expira.tzinfo is None:
+            expira = expira.replace(tzinfo=timezone.utc)
+        return ahora_utc() > expira
 
 
 class TokenVerificacion(SQLModel, table=True):
@@ -118,4 +121,7 @@ class TokenVerificacion(SQLModel, table=True):
 
     @property
     def esta_vencido(self) -> bool:
-        return ahora_utc() > self.expira_en
+        expira = self.expira_en
+        if expira.tzinfo is None:
+            expira = expira.replace(tzinfo=timezone.utc)
+        return ahora_utc() > expira

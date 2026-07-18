@@ -152,7 +152,7 @@ class ServicioAutenticacion:
         tokens = db.exec(
             select(TokenRefresco).where(
                 TokenRefresco.usuario_id == usuario_id,
-                TokenRefresco.revocado == False,
+                TokenRefresco.revocado.is_(False),
             )
         ).all()
 
@@ -320,7 +320,7 @@ class ServicioAutenticacion:
         token_encontrado = db.exec(
             select(TokenRefresco).where(
                 TokenRefresco.token_hash == token_hash,
-                TokenRefresco.revocado == False,
+                TokenRefresco.revocado.is_(False),
             )
         ).first()
 
