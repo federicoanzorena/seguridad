@@ -78,6 +78,12 @@ export function PaginaLogin() {
           </Link>
         </p>
       </div>
+
+      <div className="mt-6 bg-gray-50 border border-gray-200 p-4 text-xs text-gray-600">
+        <p className="font-semibold mb-1 text-gray-700">Credenciales de prueba (admin):</p>
+        <p>Email: <span className="font-mono">admin@admin.com</span></p>
+        <p>Contraseña: <span className="font-mono">admin123</span></p>
+      </div>
     </div>
   );
 }
